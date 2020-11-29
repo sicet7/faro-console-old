@@ -1,0 +1,16 @@
+{
+    "name": "sicet7/faro-console",
+    "license": "MIT",
+    "bin": [
+        "bin/faro"
+    ],
+    "require": {
+        "sicet7/faro-core": "^0.0.6",
+        "symfony/console": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sicet7\\Faro\\Console\\": "src/"
+        }
+    }
+}

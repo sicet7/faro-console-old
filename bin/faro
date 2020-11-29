@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '/../../../autoload.php';
+
+use Sicet7\Faro\Console\ModuleLoader;
+use Symfony\Component\Console\Application;
+
+$moduleLoader = ModuleLoader::getInstance();
+
+$container = $moduleLoader->buildContainer();
+
+$application = $container->get(Application::class);
+
+$application->run();
