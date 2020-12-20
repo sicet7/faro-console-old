@@ -52,9 +52,11 @@ final class ModuleLoader extends AbstractModuleLoader
                 ->constructor(get(FactoryParameterResolver::class)),
             CommandLoaderInterface::class => create(ContainerCommandLoader::class)
                 ->constructor(get(ContainerInterface::class), $commandMasterArray),
-            Application::class => function(CommandLoaderInterface $commandLoader) {
+            EventDispatcher::class => create(EventDispatcher::class),
+            Application::class => function(CommandLoaderInterface $commandLoader, EventDispatcher $eventDispatcher) {
                 $app = new Application();
                 $app->setCommandLoader($commandLoader);
+                $app->setDispatcher($eventDispatcher);
                 return $app;
             },
         ];
