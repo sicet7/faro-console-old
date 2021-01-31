@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0394584b4696a5d382b1a7ba12813a34",
+    "content-hash": "42816ba0df40db74462c1c80663f0056",
     "packages": [
         {
             "name": "opis/closure",
@@ -325,16 +325,16 @@
         },
         {
             "name": "sicet7/faro-core",
-            "version": "0.0.6",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sicet7/faro-core.git",
-                "reference": "4041534c00b1d2c1230935b6c4d3f415a1979775"
+                "reference": "468aebbbf9ff11ec726a88c77d3655253b7ae1d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sicet7/faro-core/zipball/4041534c00b1d2c1230935b6c4d3f415a1979775",
-                "reference": "4041534c00b1d2c1230935b6c4d3f415a1979775",
+                "url": "https://api.github.com/repos/sicet7/faro-core/zipball/468aebbbf9ff11ec726a88c77d3655253b7ae1d9",
+                "reference": "468aebbbf9ff11ec726a88c77d3655253b7ae1d9",
                 "shasum": ""
             },
             "require": {
@@ -350,7 +350,11 @@
             "license": [
                 "MIT"
             ],
-            "time": "2020-11-29T20:49:43+00:00"
+            "support": {
+                "issues": "https://github.com/sicet7/faro-core/issues",
+                "source": "https://github.com/sicet7/faro-core/tree/0.1.0"
+            },
+            "time": "2021-01-31T16:56:36+00:00"
         },
         {
             "name": "symfony/console",
@@ -1301,5 +1305,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }

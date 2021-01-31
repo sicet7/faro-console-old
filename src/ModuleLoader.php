@@ -1,71 +1,50 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Sicet7\Faro\Console;
 
-use DI\Invoker\FactoryParameterResolver;
-use Psr\Container\ContainerInterface;
-use Sicet7\Faro\Console\Exception\CommandDefinitionException;
-use Sicet7\Faro\ModuleLoader as AbstractModuleLoader;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
-use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
-use function DI\create;
+use Sicet7\Faro\ModuleLoader as CoreModuleLoader;
 use function DI\factory;
-use function DI\get;
 
-final class ModuleLoader extends AbstractModuleLoader
+class ModuleLoader extends CoreModuleLoader
 {
-    /**
-     * @return array
-     * @throws CommandDefinitionException
-     */
-    public function definitions(): array
+    private array $commandFqns = [];
+
+    public function getDefinitions(): array
     {
-        $dontFactorize = [];
-        $commandMasterArray = [];
-        foreach ($this->getList() as $moduleFqn) {
-            if (is_subclass_of($moduleFqn, ConsoleModule::class)) {
-                $commandArray = call_user_func([$moduleFqn, 'getCommands']);
-                $moduleDefs = call_user_func([$moduleFqn, 'getDefinitions']);
-                foreach ($commandArray as $commandName => $commandClass) {
-                    if (!is_subclass_of($commandClass, Command::class)) {
-                        throw new CommandDefinitionException(
-                            'Invalid command class. "' . $commandClass .
-                            '" does not extend "' . Command::class . '".'
-                        );
-                    }
-                    $commandMasterArray[$commandName] = $commandClass;
-                    if (array_key_exists($commandClass, $moduleDefs)) {
-                        $dontFactorize[] = $commandClass;
-                    }
-                }
-            }
-        }
-        $definitions = [
-            FactoryParameterResolver::class =>
-                create(FactoryParameterResolver::class)
-                    ->constructor(get(ContainerInterface::class)),
-            CommandFactory::class => create(CommandFactory::class)
-                ->constructor(get(FactoryParameterResolver::class)),
-            CommandLoaderInterface::class => create(ContainerCommandLoader::class)
-                ->constructor(get(ContainerInterface::class), $commandMasterArray),
-            EventDispatcher::class => create(EventDispatcher::class),
-            Application::class => function(CommandLoaderInterface $commandLoader, EventDispatcher $eventDispatcher) {
-                $app = new Application();
-                $app->setCommandLoader($commandLoader);
-                $app->setDispatcher($eventDispatcher);
-                return $app;
-            },
-        ];
-        foreach ($commandMasterArray as $commandClass) {
-            if (in_array($commandClass, $dontFactorize)) {
+        $definitions = parent::getDefinitions();
+        foreach ($definitions as $key => $def) {
+            $fqn = $this->getCommandFqn($key, $def);
+            if ($fqn === null) {
                 continue;
             }
-            $definitions[$commandClass] = factory([CommandFactory::class, 'create']);
+            unset($definitions[$key]);
+            $definitions[$fqn] = factory([CommandFactory::class, 'create']);
+            $this->commandFqns[] = $fqn;
         }
         return $definitions;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCommandFqns(): array
+    {
+        return $this->commandFqns;
+    }
+
+    /**
+     * @param mixed $key
+     * @param mixed $def
+     * @return string|null
+     */
+    private function getCommandFqn($key, $def): ?string
+    {
+        if (!is_numeric($key) && is_subclass_of($key, Command::class) && !is_callable($def)) {
+            return $key;
+        }
+        if (is_numeric($key) && is_subclass_of($def, Command::class)) {
+            return $def;
+        }
+        return null;
     }
 }
