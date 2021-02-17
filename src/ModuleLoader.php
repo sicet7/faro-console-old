@@ -2,49 +2,285 @@
 
 namespace Sicet7\Faro\Console;
 
-use Sicet7\Faro\ModuleLoader as CoreModuleLoader;
-use function DI\factory;
+use DI\ContainerBuilder;
+use Psr\Container\ContainerInterface;
+use Sicet7\Faro\Console\Exception\ModuleException;
 
-class ModuleLoader extends CoreModuleLoader
+class ModuleLoader
 {
-    private array $commandFqns = [];
+    /**
+     * @var array
+     */
+    private array $commandDefinitions = [];
 
-    public function getDefinitions(): array
+    /**
+     * @var string
+     */
+    private string $moduleFqn;
+
+    /**
+     * @var bool
+     */
+    private bool $loaded = false;
+
+    /**
+     * @var bool
+     */
+    private bool $setup = false;
+
+    /**
+     * @var bool
+     */
+    private bool $enabled = false;
+
+    /**
+     * @var string[]
+     */
+    private array $dependencyNames = [];
+
+    /**
+     * @var ModuleLoader[]
+     */
+    private array $dependencyLoaders = [];
+
+    /**
+     * @var string
+     */
+    private string $name;
+
+    /**
+     * @var array
+     */
+    private array $definitions = [];
+
+    /**
+     * ModuleLoader constructor.
+     * @param string $moduleFqn
+     * @throws ModuleException
+     */
+    public function __construct(string $moduleFqn) {
+        $this->moduleFqn = '\\' . ltrim($moduleFqn, '\\');
+        $this->init();
+    }
+
+    /**
+     * @throws ModuleException
+     */
+    private function init(): void
     {
-        $definitions = parent::getDefinitions();
-        foreach ($definitions as $key => $def) {
-            $fqn = $this->getCommandFqn($key, $def);
-            if ($fqn === null) {
-                continue;
-            }
-            unset($definitions[$key]);
-            $definitions[$fqn] = factory([CommandFactory::class, 'create']);
-            $this->commandFqns[] = $fqn;
+        if (!is_subclass_of($this->getModuleFqn(), AbstractModule::class)) {
+            throw new ModuleException(
+                "Invalid module class. \"{$this->getModuleFqn()}\" must be an instance of " .
+                '"' . AbstractModule::class . '".'
+            );
         }
-        return $definitions;
+
+        $enabled = $this->moduleRead('isEnabled');
+        if (!is_bool($enabled)) {
+            throw new ModuleException(
+                "Invalid \"isEnabled\" state on module: \"{$this->getModuleFqn()}\""
+            );
+        }
+        $this->enabled = $enabled;
+
+        $dependencies = $this->moduleRead('getDependencies');
+        if (!is_array($dependencies)) {
+            throw new ModuleException(
+                "Unknown dependency type on module: \"{$this->getModuleFqn()}\""
+            );
+        }
+        $this->dependencyNames = $dependencies;
+
+        $name = $this->moduleRead('getName');
+        if (!is_string($name) || empty($name)) {
+            throw new ModuleException(
+                "The module name of {$this->getModuleFqn()} must be a non empty string value."
+            );
+        }
+        $this->name = $name;
+
+        $definitions = $this->moduleRead('getDefinitions');
+        if (!is_array($definitions)) {
+            throw new ModuleException(
+                "Invalid definitions type on module: \"{$this->getModuleFqn()}\"."
+            );
+        }
+        $this->definitions = $definitions;
+
+        $commandDefinitions = $this->moduleRead('getCommandDefinitions');
+        if (!is_array($commandDefinitions)) {
+            throw new ModuleException(
+                "Invalid command definitions type on module: \"{$this->getModuleFqn()}\"."
+            );
+        }
+        foreach ($commandDefinitions as $commandDefinition) {
+            if (!is_subclass_of($commandDefinition, Command::class)) {
+                throw new ModuleException(
+                    'Invalid command definition. ' .
+                    var_export($commandDefinition, true) .
+                    ' is not a valid command'
+                );
+            }
+        }
+        $this->commandDefinitions = $commandDefinitions;
+    }
+
+    /**
+     * @param string $method
+     * @return mixed
+     */
+    private function moduleRead(string $method): mixed
+    {
+        return call_user_func([$this->getModuleFqn(), $method]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getModuleFqn(): string
+    {
+        return $this->moduleFqn;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLoaded(): bool
+    {
+        return $this->loaded;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSetup(): bool
+    {
+        return $this->setup;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     /**
      * @return array
      */
-    public function getCommandFqns(): array
+    public function getDefinitions(): array
     {
-        return $this->commandFqns;
+        return $this->definitions;
     }
 
     /**
-     * @param mixed $key
-     * @param mixed $def
-     * @return string|null
+     * @return array
      */
-    private function getCommandFqn($key, $def): ?string
+    public function getCommandDefinitions(): array
     {
-        if (!is_numeric($key) && is_subclass_of($key, Command::class) && !is_callable($def)) {
-            return $key;
+        return $this->commandDefinitions;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getDependencyNames(): array
+    {
+        return $this->dependencyNames;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDependenciesResolved(): bool
+    {
+        foreach ($this->getDependencyNames() as $dependencyName) {
+            if (!array_key_exists($dependencyName, $this->dependencyLoaders)) {
+                return false;
+            }
         }
-        if (is_numeric($key) && is_subclass_of($def, Command::class)) {
-            return $def;
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDependenciesLoaded(): bool
+    {
+        if (!$this->isDependenciesResolved()) {
+            return false;
         }
-        return null;
+        foreach ($this->dependencyLoaders as $moduleLoader) {
+            if (!$moduleLoader->isLoaded()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param ModuleLoader[] $moduleLoaders
+     * @throws ModuleException
+     */
+    public function resolveDependencies(array $moduleLoaders): void
+    {
+        $this->dependencyLoaders = [];
+        foreach ($moduleLoaders as $moduleLoader) {
+            if (in_array($moduleLoader->getName(), $this->getDependencyNames())) {
+                $this->dependencyLoaders[$moduleLoader->getName()] = $moduleLoader;
+            }
+        }
+        if (!$this->isDependenciesResolved()) {
+            throw new ModuleException(
+                "Failed to resolve dependency for module: {$this->getModuleFqn()}"
+            );
+        }
+    }
+
+    /**
+     * @param ContainerBuilder $containerBuilder
+     * @param CommandFactoryMapper $commandFactoryMapper
+     * @throws ModuleException
+     */
+    public function load(ContainerBuilder $containerBuilder, CommandFactoryMapper $commandFactoryMapper): void
+    {
+        if (!empty($this->getDefinitions())) {
+            $containerBuilder->addDefinitions($this->getDefinitions());
+        }
+        foreach ($this->getCommandDefinitions() as $potentialName => $commandDefinition) {
+            $commandName = $commandDefinition::COMMAND_NAME ?? $potentialName;
+            if (!is_string($commandName)) {
+                throw new ModuleException(
+                    'Failed to determine command name for command: ' . $commandDefinition
+                );
+            }
+            if (in_array($commandName, $commandFactoryMapper->getMap())) {
+                throw new ModuleException(
+                    "Command name collision. Command \"$commandName\" already exists."
+                );
+            }
+            $containerBuilder->addDefinitions([
+                $commandDefinition => $commandFactoryMapper->mapCommand($commandName, $commandDefinition),
+            ]);
+        }
+        $this->loaded = true;
+    }
+
+    /**
+     * @param ContainerInterface $container
+     */
+    public function setup(ContainerInterface $container): void
+    {
+        call_user_func([$this->getModuleFqn(), 'setup'], $container);
+        $this->setup = true;
     }
 }

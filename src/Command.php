@@ -5,15 +5,18 @@ namespace Sicet7\Faro\Console;
 class Command extends \Symfony\Component\Console\Command\Command
 {
     /**
-     * Should be overwritten with the name of the command by extending classes.
+     * can be overwritten with the name of the command by extending classes.
      */
     public const COMMAND_NAME = null;
 
     /**
-     * Command constructor.
+     * @return string|null
      */
-    public function __construct()
+    public static function getDefaultName(): ?string
     {
-        parent::__construct(static::COMMAND_NAME);
+        if (static::COMMAND_NAME !== null) {
+            return static::COMMAND_NAME;
+        }
+        return parent::getDefaultName();
     }
 }
