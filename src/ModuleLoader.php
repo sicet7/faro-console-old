@@ -5,6 +5,7 @@ namespace Sicet7\Faro\Console;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Sicet7\Faro\Console\Exception\ModuleException;
+use Symfony\Component\Console\Command\Command;
 
 class ModuleLoader
 {
@@ -256,8 +257,7 @@ class ModuleLoader
         if (!empty($this->getDefinitions())) {
             $containerBuilder->addDefinitions($this->getDefinitions());
         }
-        foreach ($this->getCommandDefinitions() as $potentialName => $commandDefinition) {
-            $commandName = $commandDefinition::COMMAND_NAME ?? $potentialName;
+        foreach ($this->getCommandDefinitions() as $commandName => $commandDefinition) {
             if (!is_string($commandName)) {
                 throw new ModuleException(
                     'Failed to determine command name for command: ' . $commandDefinition
