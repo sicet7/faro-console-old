@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "42816ba0df40db74462c1c80663f0056",
+    "content-hash": "032dfb7f2c5dd43235aaa8bb8039926c",
     "packages": [
         {
             "name": "opis/closure",
@@ -65,20 +65,24 @@
                 "serialization",
                 "serialize"
             ],
+            "support": {
+                "issues": "https://github.com/opis/closure/issues",
+                "source": "https://github.com/opis/closure/tree/3.6.1"
+            },
             "time": "2020-11-07T02:01:34+00:00"
         },
         {
             "name": "php-di/invoker",
-            "version": "2.2.0",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-DI/Invoker.git",
-                "reference": "e08a7c87068daeaeef464b95d81643ea530bc535"
+                "reference": "992fec6c56f2d1ad1ad5fee28267867c85bfb8f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-DI/Invoker/zipball/e08a7c87068daeaeef464b95d81643ea530bc535",
-                "reference": "e08a7c87068daeaeef464b95d81643ea530bc535",
+                "url": "https://api.github.com/repos/PHP-DI/Invoker/zipball/992fec6c56f2d1ad1ad5fee28267867c85bfb8f9",
+                "reference": "992fec6c56f2d1ad1ad5fee28267867c85bfb8f9",
                 "shasum": ""
             },
             "require": {
@@ -110,13 +114,17 @@
                 "invoke",
                 "invoker"
             ],
+            "support": {
+                "issues": "https://github.com/PHP-DI/Invoker/issues",
+                "source": "https://github.com/PHP-DI/Invoker/tree/2.3.0"
+            },
             "funding": [
                 {
                     "url": "https://github.com/mnapoli",
                     "type": "github"
                 }
             ],
-            "time": "2020-10-12T12:15:50+00:00"
+            "time": "2021-01-15T10:25:40+00:00"
         },
         {
             "name": "php-di/php-di",
@@ -178,6 +186,10 @@
                 "ioc",
                 "psr11"
             ],
+            "support": {
+                "issues": "https://github.com/PHP-DI/PHP-DI/issues",
+                "source": "https://github.com/PHP-DI/PHP-DI/tree/6.3.0"
+            },
             "funding": [
                 {
                     "url": "https://github.com/mnapoli",
@@ -226,6 +238,10 @@
                 "phpdoc",
                 "reflection"
             ],
+            "support": {
+                "issues": "https://github.com/PHP-DI/PhpDocReader/issues",
+                "source": "https://github.com/PHP-DI/PhpDocReader/tree/2.2.1"
+            },
             "time": "2020-10-12T12:39:22+00:00"
         },
         {
@@ -322,39 +338,6 @@
                 "psr-14"
             ],
             "time": "2019-01-08T18:20:26+00:00"
-        },
-        {
-            "name": "sicet7/faro-core",
-            "version": "0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/sicet7/faro-core.git",
-                "reference": "468aebbbf9ff11ec726a88c77d3655253b7ae1d9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/sicet7/faro-core/zipball/468aebbbf9ff11ec726a88c77d3655253b7ae1d9",
-                "reference": "468aebbbf9ff11ec726a88c77d3655253b7ae1d9",
-                "shasum": ""
-            },
-            "require": {
-                "php-di/php-di": "^6.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Sicet7\\Faro\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "support": {
-                "issues": "https://github.com/sicet7/faro-core/issues",
-                "source": "https://github.com/sicet7/faro-core/tree/0.1.0"
-            },
-            "time": "2021-01-31T16:56:36+00:00"
         },
         {
             "name": "symfony/console",
