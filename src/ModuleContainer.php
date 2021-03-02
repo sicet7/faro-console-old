@@ -12,6 +12,7 @@ use Sicet7\Faro\Console\Exception\ModuleException;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
 use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use function DI\create;
 use function DI\get;
 
