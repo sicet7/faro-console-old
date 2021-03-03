@@ -17,7 +17,8 @@ class CommandFactoryMapper
     public function mapCommand(string $name, string $fqn): FactoryDefinitionHelper
     {
         $this->commandMap[$name] = $fqn;
-        return factory([CommandFactory::class, 'create']);
+        return factory([CommandFactory::class, 'create'])
+            ->parameter('name', $name);
     }
 
     /**
