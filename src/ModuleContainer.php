@@ -8,11 +8,17 @@ use DI\Container;
 use DI\ContainerBuilder;
 use DI\Invoker\FactoryParameterResolver;
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
+use Sicet7\Faro\Console\Event\Dispatcher;
+use Sicet7\Faro\Console\Event\ListenerContainer;
+use Sicet7\Faro\Console\Event\ListenerContainerInterface;
+use Sicet7\Faro\Console\Event\SymfonyDispatcher;
 use Sicet7\Faro\Console\Exception\ModuleException;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
 use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcherInterface;
 use function DI\create;
 use function DI\get;
 
@@ -77,8 +83,19 @@ class ModuleContainer
                     ->constructor(get(ContainerInterface::class)),
             CommandFactory::class => create(CommandFactory::class)
                 ->constructor(get(FactoryParameterResolver::class)),
-            EventDispatcher::class => create(EventDispatcher::class),
-            Application::class => function(CommandLoaderInterface $commandLoader, EventDispatcher $eventDispatcher) {
+            ListenerContainer::class => create(ListenerContainer::class)
+                ->constructor(get(ContainerInterface::class)),
+            ListenerContainerInterface::class => get(ListenerContainer::class),
+            ListenerProviderInterface::class => get(ListenerContainerInterface::class),
+            Dispatcher::class => create(Dispatcher::class)
+                ->constructor(get(ListenerProviderInterface::class)),
+            PsrEventDispatcherInterface::class => get(Dispatcher::class),
+            SymfonyEventDispatcherInterface::class => create(SymfonyDispatcher::class)
+                ->constructor(get(PsrEventDispatcherInterface::class)),
+            Application::class => function(
+                CommandLoaderInterface $commandLoader,
+                SymfonyEventDispatcherInterface $eventDispatcher
+            ) {
                 $app = new Application();
                 $app->setCommandLoader($commandLoader);
                 $app->setDispatcher($eventDispatcher);
