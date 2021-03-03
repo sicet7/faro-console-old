@@ -23,25 +23,25 @@ class CommandFactory
 
     /**
      * @param RequestedEntry $entry
+     * @param string $name
      * @return Command
      * @throws DependencyException
      */
-    public function create(RequestedEntry $entry): Command
+    public function create(RequestedEntry $entry, string $name): Command
     {
-        $name = $entry->getName();
-        if (!is_subclass_of($name, Command::class)) {
-            throw new DependencyException('"' . self::class . '" cannot instantiate class "' . $name . '".');
+        $entryName = $entry->getName();
+        if (!is_subclass_of($entryName, Command::class)) {
+            throw new DependencyException('"' . self::class . '" cannot instantiate class "' . $entryName . '".');
         }
         try {
             $args = $this->resolver->getParameters(
-                new \ReflectionMethod($name, '__construct'),
+                new \ReflectionMethod($entryName, '__construct'),
                 [],
-                []
+                [
+                    'name' => $name
+                ]
             );
-            if (empty($args)) {
-                return new $name();
-            }
-            return new $name(...$args);
+            return new $entryName(...$args);
         } catch (\ReflectionException $exception) {
             throw new DependencyException($exception->getMessage(), $exception->getCode(), $exception);
         }
