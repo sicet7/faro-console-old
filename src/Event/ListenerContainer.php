@@ -32,7 +32,7 @@ class ListenerContainer implements ListenerContainerInterface
     public function getListenersForEvent(object $event): iterable
     {
         $fqn = $this->parseEventFqn(get_class($event));
-        $listeners = $this->listeners[$fqn];
+        $listeners = $this->listeners[$fqn] ?? [];
         $returnArray = [];
         if (empty($listeners)) {
             return [];

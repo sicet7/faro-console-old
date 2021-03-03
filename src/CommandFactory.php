@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Sicet7\Faro\Console;
 
 use DI\DependencyException;
-use DI\Invoker\FactoryParameterResolver;
 use DI\Factory\RequestedEntry;
+use Invoker\ParameterResolver\ParameterResolver;
 use Symfony\Component\Console\Command\Command;
 
 class CommandFactory
 {
     /**
-     * @var FactoryParameterResolver
+     * @var ParameterResolver
      */
-    private FactoryParameterResolver $resolver;
+    private ParameterResolver $resolver;
 
-    public function __construct(FactoryParameterResolver $resolver)
+    public function __construct(ParameterResolver $resolver)
     {
         $this->resolver = $resolver;
     }
@@ -36,11 +36,12 @@ class CommandFactory
         try {
             $args = $this->resolver->getParameters(
                 new \ReflectionMethod($entryName, '__construct'),
-                [],
                 [
                     'name' => $name
-                ]
+                ],
+                []
             );
+            ksort($args);
             return new $entryName(...$args);
         } catch (\ReflectionException $exception) {
             throw new DependencyException($exception->getMessage(), $exception->getCode(), $exception);

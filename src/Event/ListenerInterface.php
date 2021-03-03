@@ -4,5 +4,9 @@ namespace Sicet7\Faro\Console\Event;
 
 interface ListenerInterface
 {
-    public function execute(object $event);
+    /**
+     * @param object $event
+     * @return void
+     */
+    public function execute(object $event): void;
 }

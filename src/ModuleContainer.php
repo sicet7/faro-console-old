@@ -7,6 +7,9 @@ namespace Sicet7\Faro\Console;
 use DI\Container;
 use DI\ContainerBuilder;
 use DI\Invoker\FactoryParameterResolver;
+use Invoker\ParameterResolver\AssociativeArrayResolver;
+use Invoker\ParameterResolver\DefaultValueResolver;
+use Invoker\ParameterResolver\ResolverChain;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
@@ -78,11 +81,14 @@ class ModuleContainer
         $this->containerBuilder->useAutowiring(false);
         $this->containerBuilder->useAnnotations(false);
         $this->containerBuilder->addDefinitions([
-            FactoryParameterResolver::class =>
-                create(FactoryParameterResolver::class)
-                    ->constructor(get(ContainerInterface::class)),
             CommandFactory::class => create(CommandFactory::class)
-                ->constructor(get(FactoryParameterResolver::class)),
+                ->constructor(create(ResolverChain::class)
+                    ->constructor([
+                        create(AssociativeArrayResolver::class),
+                        create(FactoryParameterResolver::class)
+                            ->constructor(get(ContainerInterface::class)),
+                        create(DefaultValueResolver::class)
+                    ])),
             ListenerContainer::class => create(ListenerContainer::class)
                 ->constructor(get(ContainerInterface::class)),
             ListenerContainerInterface::class => get(ListenerContainer::class),
