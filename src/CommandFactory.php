@@ -9,42 +9,39 @@ use DI\Factory\RequestedEntry;
 use Invoker\ParameterResolver\ParameterResolver;
 use Symfony\Component\Console\Command\Command;
 
-class CommandFactory
+class CommandFactory extends GenericFactory
 {
-    /**
-     * @var ParameterResolver
-     */
-    private ParameterResolver $resolver;
-
-    public function __construct(ParameterResolver $resolver)
-    {
-        $this->resolver = $resolver;
-    }
+    private array $providedParameters = [];
 
     /**
      * @param RequestedEntry $entry
-     * @param string $name
-     * @return Command
+     * @param string|null $name
+     * @return object|Command
      * @throws DependencyException
      */
-    public function create(RequestedEntry $entry, string $name): Command
+    public function create(RequestedEntry $entry, string $name = null): object
     {
-        $entryName = $entry->getName();
-        if (!is_subclass_of($entryName, Command::class)) {
-            throw new DependencyException('"' . self::class . '" cannot instantiate class "' . $entryName . '".');
+        $this->providedParameters = [];
+        if (!empty($name)) {
+            $this->providedParameters['name'] = $name;
         }
-        try {
-            $args = $this->resolver->getParameters(
-                new \ReflectionMethod($entryName, '__construct'),
-                [
-                    'name' => $name
-                ],
-                []
-            );
-            ksort($args);
-            return new $entryName(...$args);
-        } catch (\ReflectionException $exception) {
-            throw new DependencyException($exception->getMessage(), $exception->getCode(), $exception);
-        }
+        return parent::create($entry);
+    }
+
+    protected function getProvidedParameters(): array
+    {
+        return $this->providedParameters;
+    }
+
+    protected function getResolvedParameters(): array
+    {
+        return [];
+    }
+
+    protected function getClassWhitelist(): array
+    {
+        return [
+            Command::class
+        ];
     }
 }
