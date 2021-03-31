@@ -263,7 +263,7 @@ class ModuleLoader
                     'Failed to determine command name for command: ' . $commandDefinition
                 );
             }
-            if (in_array($commandName, $commandFactoryMapper->getMap())) {
+            if (array_key_exists($commandName, $commandFactoryMapper->getMap())) {
                 throw new ModuleException(
                     "Command name collision. Command \"$commandName\" already exists."
                 );
